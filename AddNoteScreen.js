@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, TextInput, Button, StyleSheet } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
-const AddNoteScreen = () => {
+export default AddNoteScreen = () => {
   const [note, setNote] = useState("");
   const navigation = useNavigation();
   const route = useRoute();
@@ -24,7 +24,7 @@ const AddNoteScreen = () => {
         onChangeText={(text) => setNote(text)}
         style={styles.input}
       />
-      <Button title="Save" onPress={saveNote} />
+      <Button color="#70b58d" title=" Save " onPress={saveNote} />
     </View>
   );
 };
@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#c2d3d8",
   },
   input: {
     borderWidth: 1,
@@ -41,7 +42,6 @@ const styles = StyleSheet.create({
     width: "80%",
     padding: 10,
     marginBottom: 10,
+    backgroundColor: "white",
   },
 });
-
-export default AddNoteScreen;
