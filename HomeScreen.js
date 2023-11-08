@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Button, FlatList, StyleSheet, Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { getFirestore, collection, addDoc } from "firebase/firestore"; 
 const screenWidth = Dimensions.get("window").width
 export default HomeScreen = ({ navigation, route }) => {
   const [notes, setNotes] = useState([]);
@@ -28,6 +29,7 @@ export default HomeScreen = ({ navigation, route }) => {
     setNotes(newNotes);
   };
 
+  
   return (
     <View style={styles.container}>
       <Text>Welcome to the Home Screen!</Text>
