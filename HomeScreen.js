@@ -1,10 +1,65 @@
 import React, { useState } from "react";
-import { View, Text, Button, FlatList, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  FlatList,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getFirestore, collection, addDoc } from "firebase/firestore"; 
-const screenWidth = Dimensions.get("window").width
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect } from "react";
+
+const screenWidth = Dimensions.get("window").width;
+
 export default HomeScreen = ({ navigation, route }) => {
   const [notes, setNotes] = useState([]);
+  const [userId, setUserId] = useState("");
+
+  useEffect(() => {
+    const getUserId = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem("id");
+        if (storedUserId) {
+          setUserId(storedUserId);
+
+          const storedNotes = await AsyncStorage.getItem(
+            `notes_${storedUserId}`
+          );
+          if (storedNotes) {
+            setNotes(JSON.parse(storedNotes) ?? []);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading user ID or notes:", error);
+      }
+    };
+    getUserId();
+  }, []);
+
+  const loadNotes = async () => {
+    try {
+      const storedNotes = await AsyncStorage.getItem(`notes_${userId}`);
+      if (storedNotes) {
+        setNotes(JSON.parse(storedNotes));
+      }
+    } catch (error) {
+      console.error("Error loading notes:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadNotes();
+  }, []);
+
+  const saveNotes = async (newNotes) => {
+    try {
+      await AsyncStorage.setItem(`notes_${userId}`, JSON.stringify(newNotes));
+    } catch (error) {
+      console.error("Error saving notes:", error);
+    }
+  };
 
   const addNote = () => {
     navigation.navigate("AddNote", { notes, updateNotes: updateNotes });
@@ -18,21 +73,24 @@ export default HomeScreen = ({ navigation, route }) => {
     const newNotes = [...notes];
     newNotes.splice(index, 1);
     setNotes(newNotes);
+    saveNotes(newNotes);
   };
 
   const deleteAll = () => {
     const newNotes = [];
     setNotes(newNotes);
+    saveNotes(newNotes);
+    AsyncStorage.removeItem(`notes_${userId}`);
   };
 
   const updateNotes = (newNotes) => {
     setNotes(newNotes);
+    saveNotes(newNotes);
   };
 
-  
   return (
     <View style={styles.container}>
-      <Text>Welcome to the Home Screen!</Text>
+      <Text>Welcome to the Home Screen, {userId}!</Text>
       <View style={styles.header}>
         <Button color="#70b58d" title="Add Note" onPress={addNote} />
         <Button
@@ -49,12 +107,12 @@ export default HomeScreen = ({ navigation, route }) => {
           <View style={styles.noteContainer}>
             <View style={[styles.noteItem, { width: screenWidth * 0.9 }]}>
               <Text
-                style={{ color: "white",width: "75%",}}
+                style={{ color: "white", width: "75%" }}
                 onPress={() => editNote(item)}
               >
                 {item}
               </Text>
-              <View style={{ backgroundColor: "red", }}>
+              <View style={{ backgroundColor: "red" }}>
                 <Button
                   color="#70b58d"
                   title="Delete"
@@ -82,12 +140,9 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   noteContainer: {
-
     padding: 5,
     flexDirection: "column",
     width: "100%",
-
-
   },
   noteItem: {
     flexDirection: "row",
